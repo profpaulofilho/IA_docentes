@@ -4,21 +4,19 @@ import { createServerClient } from '@supabase/ssr'
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  if (
+  const isPublicRoute =
     pathname === '/login' ||
     pathname === '/mqct' ||
     pathname.startsWith('/mqct/') ||
-    pathname.startsWith('/api/') ||
-    pathname.startsWith('/logout') ||
     pathname.startsWith('/auth/') ||
+    pathname.startsWith('/api/') ||
     pathname.startsWith('/_next') ||
     pathname === '/favicon.ico'
-  ) {
-    return NextResponse.next()
-  }
 
   let response = NextResponse.next({
-    request: { headers: request.headers },
+    request: {
+      headers: request.headers,
+    },
   })
 
   const supabase = createServerClient(
@@ -31,6 +29,16 @@ export async function middleware(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) => {
+            request.cookies.set(name, value)
+          })
+
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          })
+
+          cookiesToSet.forEach(({ name, value, options }) => {
             response.cookies.set(name, value, options)
           })
         },
@@ -38,23 +46,22 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  let isLoggedIn = false
-
-  try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    isLoggedIn = !!user
-  } catch {
-    isLoggedIn = false
-  }
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   if (pathname === '/') {
-    return NextResponse.redirect(new URL(isLoggedIn ? '/admin' : '/login', request.url))
+    return NextResponse.redirect(
+      new URL(user ? '/admin' : '/login', request.url)
+    )
   }
 
-  if (!isLoggedIn) {
+  if (!user && !isPublicRoute) {
     return NextResponse.redirect(new URL('/login', request.url))
+  }
+
+  if (user && pathname === '/login') {
+    return NextResponse.redirect(new URL('/admin', request.url))
   }
 
   return response
