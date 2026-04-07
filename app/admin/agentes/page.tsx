@@ -86,7 +86,7 @@ export default async function GerenciarAgentesPage() {
               }}
             />
             <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>
-              Gerenciar agentes TESTE 999
+              Gerenciar agentes
             </span>
           </div>
 
