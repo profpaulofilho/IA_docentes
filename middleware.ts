@@ -1,67 +1,32 @@
-import { type NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
+import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
+export async function middleware(req: NextRequest) {
+  const res = NextResponse.next()
 
-  if (
-    pathname === '/login' ||
-    pathname === '/mqct' ||
-    pathname.startsWith('/mqct/') ||
-    pathname.startsWith('/api/') ||
-    pathname.startsWith('/logout') ||
-    pathname.startsWith('/auth/') ||
-    pathname.startsWith('/_next') ||
-    pathname === '/favicon.ico'
-  ) {
-    return NextResponse.next()
-  }
+  const supabase = createMiddlewareClient({ req, res })
 
-  let response = NextResponse.next({
-    request: { headers: request.headers },
-  })
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            response.cookies.set(name, value, options)
-          })
-        },
-      },
-    }
+  const pathname = req.nextUrl.pathname
+
+  // Rotas públicas
+  const publicRoutes = ['/', '/login', '/auth/callback', '/mqct']
+
+  const isPublic = publicRoutes.some((route) =>
+    pathname.startsWith(route)
   )
 
-  let isLoggedIn = false
-
-  try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    isLoggedIn = !!user
-  } catch {
-    isLoggedIn = false
+  if (!session && !isPublic) {
+    return NextResponse.redirect(new URL('/login', req.url))
   }
 
-  if (pathname === '/') {
-    return NextResponse.redirect(new URL(isLoggedIn ? '/admin' : '/login', request.url))
-  }
-
-  if (!isLoggedIn) {
-    return NextResponse.redirect(new URL('/login', request.url))
-  }
-
-  return response
+  return res
 }
 
 export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-  ],
+  matcher: ['/((?!_next|favicon.ico).*)'],
 }
