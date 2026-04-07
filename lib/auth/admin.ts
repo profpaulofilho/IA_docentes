@@ -6,18 +6,25 @@ export async function requireAdmin() {
 
   const {
     data: { user },
-    error,
+    error: userError,
   } = await supabase.auth.getUser()
 
-  if (error || !user) redirect('/login')
+  if (userError || !user) {
+    redirect('/login')
+  }
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('id, role, is_active')
     .eq('id', user.id)
     .single()
 
-  if (!profile || !profile.is_active || profile.role !== 'admin') {
+  if (
+    profileError ||
+    !profile ||
+    !profile.is_active ||
+    profile.role !== 'admin'
+  ) {
     redirect('/admin')
   }
 
