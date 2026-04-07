@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import Link from 'next/link'
 import { revalidatePath } from 'next/cache'
 import { requireAdmin } from '../../lib/auth/admin'
@@ -10,7 +11,9 @@ async function createUser(formData: FormData) {
   const admin = createAdminClient()
 
   const full_name = String(formData.get('full_name') || '').trim()
-  const email = String(formData.get('email') || '').trim().toLowerCase()
+  const email = String(formData.get('email') || '')
+    .trim()
+    .toLowerCase()
   const password = String(formData.get('password') || '').trim()
   const role = String(formData.get('role') || 'viewer').trim()
 
@@ -104,93 +107,148 @@ export default async function UsuariosPage() {
       <style>{`
         * { font-family: 'Sora', sans-serif; }
         input, select { outline: none; }
+        input:focus, select:focus {
+          border-color: rgba(37,99,235,0.5) !important;
+          background: rgba(37,99,235,0.06) !important;
+        }
       `}</style>
 
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20 }}>
-          <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 20,
+            flexWrap: 'wrap',
+            gap: 12,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <img src="/senai-logo.png" alt="SENAI" style={{ height: 36 }} />
-            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)' }}>Usuários do portal</span>
+            <div
+              style={{
+                width: 1,
+                height: 24,
+                background: 'rgba(255,255,255,0.1)',
+              }}
+            />
+            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)' }}>
+              Usuários do portal
+            </span>
           </div>
-          <Link href="/admin" style={{
-            padding:'8px 16px', borderRadius:10, fontSize:12, fontWeight:600,
-            background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.1)',
-            color:'rgba(255,255,255,0.75)'
-          }}>← Admin</Link>
+
+          <Link href="/admin" style={backBtn}>
+            ← Admin
+          </Link>
         </div>
 
-        <div style={{
-          background:'rgba(255,255,255,0.04)',
-          border:'1px solid rgba(255,255,255,0.08)',
-          borderRadius:20,
-          padding:'24px',
-          marginBottom:16
-        }}>
-          <div style={{ fontSize:11, fontWeight:700, color:'#60a5fa', textTransform:'uppercase', marginBottom:8 }}>
-            Gestão interna
-          </div>
-          <h1 style={{ margin:'0 0 8px', fontSize:26, fontWeight:800, color:'#fff' }}>Gerenciar usuários</h1>
+        <div style={headerCard}>
+          <div style={eyebrow}>Gestão interna</div>
+          <h1 style={title}>Gerenciar usuários</h1>
+          <p style={subtitle}>
+            Criar, editar, ativar, inativar e remover usuários com acesso ao
+            Hub de Agentes IA.
+          </p>
 
-          <form action={createUser} style={{ display:'grid', gap:12, marginTop:18 }}>
-            <div style={{ display:'grid', gridTemplateColumns:'1.2fr 1fr 1fr 160px', gap:12 }}>
+          <form action={createUser} style={{ display: 'grid', gap: 12, marginTop: 18 }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1.2fr 1fr 1fr 160px',
+                gap: 12,
+              }}
+            >
               <input name="full_name" placeholder="Nome completo" required style={inp} />
               <input name="email" type="email" placeholder="Email" required style={inp} />
-              <input name="password" type="password" placeholder="Senha inicial" required style={inp} />
+              <input
+                name="password"
+                type="password"
+                placeholder="Senha inicial"
+                required
+                style={inp}
+              />
               <select name="role" defaultValue="viewer" style={inp}>
                 <option value="viewer">viewer</option>
                 <option value="admin">admin</option>
               </select>
             </div>
 
-            <button type="submit" style={primaryBtn}>+ Criar usuário</button>
+            <button type="submit" style={primaryBtn}>
+              + Criar usuário
+            </button>
           </form>
         </div>
 
         {error && (
-          <div style={{ color:'#fca5a5', marginBottom:16 }}>Erro ao carregar usuários: {error.message}</div>
+          <div style={errorBox}>Erro ao carregar usuários: {error.message}</div>
         )}
 
-        <div style={{ display:'grid', gap:10 }}>
+        <div style={{ display: 'grid', gap: 10 }}>
           {(profiles || []).map((p: any) => (
-            <div key={p.id} style={{
-              background:'rgba(255,255,255,0.03)',
-              border:'1px solid rgba(255,255,255,0.08)',
-              borderRadius:16,
-              padding:'16px 18px'
-            }}>
-              <form action={updateUser} style={{ display:'grid', gap:12 }}>
+            <div key={p.id} style={rowCard}>
+              <form action={updateUser} style={{ display: 'grid', gap: 12 }}>
                 <input type="hidden" name="id" value={p.id} />
 
-                <div style={{ display:'grid', gridTemplateColumns:'1.1fr 1fr 140px 140px auto', gap:10, alignItems:'center' }}>
-                  <input name="full_name" defaultValue={p.full_name || ''} style={inp} />
-                  <input value={p.email || ''} disabled style={{ ...inp, opacity: 0.65 }} />
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1.1fr 1fr 140px 140px auto',
+                    gap: 10,
+                    alignItems: 'center',
+                  }}
+                >
+                  <input
+                    name="full_name"
+                    defaultValue={p.full_name || ''}
+                    style={inp}
+                  />
+                  <input
+                    value={p.email || ''}
+                    disabled
+                    style={{ ...inp, opacity: 0.65 }}
+                  />
                   <select name="role" defaultValue={p.role || 'viewer'} style={inp}>
                     <option value="viewer">viewer</option>
                     <option value="admin">admin</option>
                   </select>
-                  <select name="is_active" defaultValue={String(!!p.is_active)} style={inp}>
+                  <select
+                    name="is_active"
+                    defaultValue={String(!!p.is_active)}
+                    style={inp}
+                  >
                     <option value="true">ativo</option>
                     <option value="false">inativo</option>
                   </select>
 
-                  <div style={{ display:'flex', gap:8 }}>
-                    <button type="submit" style={secondaryBtn}>Salvar</button>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button type="submit" style={secondaryBtn}>
+                      Salvar
+                    </button>
                   </div>
                 </div>
               </form>
 
-              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:10 }}>
-                <div style={{ fontSize:12, color:'rgba(255,255,255,0.35)' }}>
-                  Criado em {p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR') : '-'}
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginTop: 10,
+                  gap: 10,
+                  flexWrap: 'wrap',
+                }}
+              >
+                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>
+                  Criado em{' '}
+                  {p.created_at
+                    ? new Date(p.created_at).toLocaleDateString('pt-BR')
+                    : '-'}
                 </div>
 
                 <form action={deleteUser}>
                   <input type="hidden" name="id" value={p.id} />
-                  <button
-                    type="submit"
-                    style={dangerBtn}
-                    onClick={undefined}
-                  >
+                  <button type="submit" style={dangerBtn}>
                     Remover usuário
                   </button>
                 </form>
@@ -198,48 +256,116 @@ export default async function UsuariosPage() {
             </div>
           ))}
         </div>
+
+        <div
+          style={{
+            textAlign: 'center',
+            padding: '24px 0',
+            fontSize: 11,
+            color: 'rgba(255,255,255,0.15)',
+          }}
+        >
+          Desenvolvido por Paulo da Silva Filho · Especialista de TI · SENAI
+          Bahia · GEP · 2026
+        </div>
       </div>
     </main>
   )
 }
 
-const inp: React.CSSProperties = {
-  width:'100%',
-  background:'rgba(255,255,255,0.05)',
-  border:'1px solid rgba(255,255,255,0.1)',
-  borderRadius:10,
-  padding:'11px 14px',
-  fontSize:13,
-  color:'#f1f5f9'
+const headerCard: CSSProperties = {
+  background: 'rgba(255,255,255,0.04)',
+  border: '1px solid rgba(255,255,255,0.08)',
+  borderRadius: 20,
+  padding: '24px',
+  marginBottom: 16,
 }
 
-const primaryBtn: React.CSSProperties = {
-  background:'linear-gradient(135deg,#1d4ed8,#3b82f6)',
-  color:'#fff',
-  border:'none',
-  borderRadius:10,
-  padding:'12px 16px',
-  fontWeight:700,
-  fontSize:14,
-  cursor:'pointer'
+const eyebrow: CSSProperties = {
+  fontSize: 11,
+  fontWeight: 700,
+  color: '#60a5fa',
+  textTransform: 'uppercase',
+  marginBottom: 8,
 }
 
-const secondaryBtn: React.CSSProperties = {
-  background:'rgba(37,99,235,0.15)',
-  border:'1px solid rgba(37,99,235,0.25)',
-  color:'#93c5fd',
-  borderRadius:10,
-  padding:'10px 14px',
-  fontWeight:700,
-  cursor:'pointer'
+const title: CSSProperties = {
+  margin: '0 0 8px',
+  fontSize: 26,
+  fontWeight: 800,
+  color: '#fff',
 }
 
-const dangerBtn: React.CSSProperties = {
-  background:'rgba(239,68,68,0.1)',
-  border:'1px solid rgba(239,68,68,0.25)',
-  color:'#fca5a5',
-  borderRadius:10,
-  padding:'10px 14px',
-  fontWeight:700,
-  cursor:'pointer'
+const subtitle: CSSProperties = {
+  margin: 0,
+  fontSize: 12,
+  color: 'rgba(255,255,255,0.35)',
+}
+
+const inp: CSSProperties = {
+  width: '100%',
+  background: 'rgba(255,255,255,0.05)',
+  border: '1px solid rgba(255,255,255,0.1)',
+  borderRadius: 10,
+  padding: '11px 14px',
+  fontSize: 13,
+  color: '#f1f5f9',
+}
+
+const primaryBtn: CSSProperties = {
+  background: 'linear-gradient(135deg,#1d4ed8,#3b82f6)',
+  color: '#fff',
+  border: 'none',
+  borderRadius: 10,
+  padding: '12px 16px',
+  fontWeight: 700,
+  fontSize: 14,
+  cursor: 'pointer',
+}
+
+const secondaryBtn: CSSProperties = {
+  background: 'rgba(37,99,235,0.15)',
+  border: '1px solid rgba(37,99,235,0.25)',
+  color: '#93c5fd',
+  borderRadius: 10,
+  padding: '10px 14px',
+  fontWeight: 700,
+  cursor: 'pointer',
+}
+
+const dangerBtn: CSSProperties = {
+  background: 'rgba(239,68,68,0.1)',
+  border: '1px solid rgba(239,68,68,0.25)',
+  color: '#fca5a5',
+  borderRadius: 10,
+  padding: '10px 14px',
+  fontWeight: 700,
+  cursor: 'pointer',
+}
+
+const backBtn: CSSProperties = {
+  padding: '8px 16px',
+  borderRadius: 10,
+  fontSize: 12,
+  fontWeight: 600,
+  background: 'rgba(255,255,255,0.06)',
+  border: '1px solid rgba(255,255,255,0.1)',
+  color: 'rgba(255,255,255,0.75)',
+}
+
+const rowCard: CSSProperties = {
+  background: 'rgba(255,255,255,0.03)',
+  border: '1px solid rgba(255,255,255,0.08)',
+  borderRadius: 16,
+  padding: '16px 18px',
+}
+
+const errorBox: CSSProperties = {
+  padding: '12px 16px',
+  background: 'rgba(239,68,68,0.1)',
+  border: '1px solid rgba(239,68,68,0.2)',
+  borderRadius: 12,
+  color: '#fca5a5',
+  fontSize: 13,
+  marginBottom: 16,
 }
