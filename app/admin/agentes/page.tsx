@@ -131,14 +131,7 @@ export default async function GerenciarAgentesPage() {
                       flexWrap: 'wrap',
                     }}
                   >
-                    <h3
-                      style={{
-                        margin: 0,
-                        fontSize: 15,
-                        fontWeight: 700,
-                        color: '#f1f5f9',
-                      }}
-                    >
+                    <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#f1f5f9' }}>
                       {agent.name}
                     </h3>
 
@@ -209,10 +202,7 @@ export default async function GerenciarAgentesPage() {
               }}
             >
               Nenhum agente cadastrado ainda.{' '}
-              <Link
-                href="/admin/agentes/novo"
-                style={{ color: '#60a5fa', fontWeight: 600 }}
-              >
+              <Link href="/admin/agentes/novo" style={{ color: '#60a5fa', fontWeight: 600 }}>
                 Cadastrar primeiro agente →
               </Link>
             </div>
